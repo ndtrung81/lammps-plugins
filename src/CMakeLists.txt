@@ -11,7 +11,7 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
     "Please remove CMakeCache.txt and CMakeFiles first.")
 endif()
 
-project(plugins VERSION 1.0 LANGUAGES CXX)
+project(plugins VERSION 1.0 LANGUAGES C)
 
 set(PROJECT_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_MODULE_PATH})
@@ -100,9 +100,9 @@ target_link_libraries(lj2plugin PRIVATE "${LAMMPS_BUILD_DIR}/liblammps.so")
 
 if ("CUDA_LAMBDA" IN_LIST Kokkos_OPTIONS)
   message(STATUS "Kokkos with CUDA backend with --extended-lambda")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --extended-lambda")
-  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} --extended-lambda")
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} --extended-lambda")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --extended-lambda -Wext-lambda-captures-this -arch=sm_60 -std=c++17")
+  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} --extended-lambda -Wext-lambda-captures-this -arch=sm_60 -std=c++17")
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}  --extended-lambda -Wext-lambda-captures-this -arch=sm_60 -std=c++17")
 endif()
 
 set_target_properties(morse2plugin lj2plugin PROPERTIES PREFIX "" SUFFIX ".so")
