@@ -1,5 +1,4 @@
 # lammps-plugins
-LAMMPS plugins
 
 This project illustrates how to build LAMMPS plugins with Kokkos-derived pair styles.
 
@@ -12,22 +11,29 @@ LAMMPS is already built with KOKKOS suppport with CUDA backend
   cd lammps
   mkdir install
   mkdir build && cd build
-  cmake ../cmake -C ../cmake/preset/basic.cmake \
-     -DBUILD_MPI=on -DPKG_KOKKOS=on -DKokkos_ENABLE_CUDA -Kokkos_ARCH_AMPERE80=on -DCMAKE_INSTALL_PREFIX=../install
+  cmake ../cmake -C ../cmake/preset/basic.cmake -DBUILD_MPI=on \
+       -DPKG_KOKKOS=on -DKokkos_ENABLE_CUDA -Kokkos_ARCH_AMPERE80=on \
+       -DCMAKE_INSTALL_PREFIX=../install
   make -j4
   make install
 ```
 
-## Configure the build:
+The installation folder `CMAKE_INSTALL_PREFIX` is needed for the plugin CMake build to find `LAMMPS_Targets.cmake`, `LAMMPSConfig.cmake` and , `LAMMPSConfigVersion.cmake`.
+
+Without the `make install` step  `LAMMPS_Targets.cmake` is buried under a temporary folder under `build/CMakeFiles/Export`.
+
+## Download and build the plugin
+
 
 ```
   git clone https://github.com/ndtrung81/lammps-plugins.git
 
   cd lammps-plugins
   mkdir build && cd build
-  export LAMMPS_INSTALL_DIR=/home/ndtrung/Codes/lammps-git/install
-  export LAMMPS_SOURCE_DIR=/home/ndtrung/Codes/lammps-git/src
-  export LAMMPS_BUILD_DIR=/home/ndtrung/Codes/lammps-git/build
+
+  export LAMMPS_INSTALL_DIR=/path/to/lammps/install
+  export LAMMPS_SOURCE_DIR=/path/to/lammps/src
+  export LAMMPS_BUILD_DIR=//path/to/lammps/build
   export KOKKOS_ROOT=$LAMMPS_BUILD_DIR/cmake_packages/Kokkos
 
   cmake ../src -DLAMMPS_ROOT=$LAMMPS_INSTALL_DIR \
@@ -37,6 +43,8 @@ LAMMPS is already built with KOKKOS suppport with CUDA backend
     -DLAMMPS_BUILD_DIR=$LAMMPS_BUILD_DIR
   make
 ```
+
+The variable `KOKKOS_ROOT` is for the location where the Kokkos cmake settings `KokkosConfig.cmake`, `KokkosConfigCommon.cmake`, `KokkosConfigVersion.cmake` and `KokkosTargets.cmake` are located.
 
 The build when complete will generate `morse2plugin.so` and lj2plugin.so in the `build` folder.
 
