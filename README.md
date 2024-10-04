@@ -1,6 +1,6 @@
 # lammps-plugins
 
-This project illustrates how to build LAMMPS plugins with Kokkos-derived pair styles.
+This project illustrates how to build LAMMPS plugins with Kokkos-derived pair styles out of the LAMMPS KOKKOS source tree.
 
 ## Prerequisite
 
@@ -11,7 +11,7 @@ LAMMPS is already built with KOKKOS suppport with CUDA backend
   cd lammps
   mkdir install
   mkdir build && cd build
-  cmake ../cmake -C ../cmake/preset/basic.cmake -DBUILD_MPI=on \
+  cmake ../cmake -C ../cmake/preset/basic.cmake -DBUILD_MPI=on -DPKG_PLUGIN=on \
        -DPKG_KOKKOS=on -DKokkos_ENABLE_CUDA -Kokkos_ARCH_AMPERE80=on \
        -DCMAKE_INSTALL_PREFIX=../install
   make -j4
@@ -44,10 +44,27 @@ Without the `make install` step  `LAMMPS_Targets.cmake` is buried under a tempor
   make
 ```
 
+
 The variable `KOKKOS_ROOT` is for the location where the Kokkos cmake settings `KokkosConfig.cmake`, `KokkosConfigCommon.cmake`, `KokkosConfigVersion.cmake` and `KokkosTargets.cmake` are located.
 
 The build when complete will generate `morse2plugin.so` and lj2plugin.so in the `build` folder.
 
 The `examples` folder contains the input scripts to test the plugins.
+
+The goal is to be able to run
+
+```
+  cd examples/
+  LAMMPS_INSTALL_DIR/bin/lmp -in in.lj -k on g 1 -sf kk
+```
+
+where the `in.lj` script loads the plugin with the command and uses the pair styles
+
+```
+plugin          load /path/to/lammps-plugins/build/lj2plugin.so
+
+pair_style      lj/cut2 2.5
+pair_coeff      * * 1.0 1.0
+```
 
 
