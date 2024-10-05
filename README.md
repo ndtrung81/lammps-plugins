@@ -49,9 +49,9 @@ The variable `KOKKOS_ROOT` is for the location where the Kokkos cmake settings `
 
 The build when complete will generate `morse2plugin.so` and lj2plugin.so in the `build` folder.
 
-The `examples` folder contains the input scripts to test the plugins.
+## Test
 
-The goal is to be able to run
+The `examples` folder contains the input scripts to test the plugins.
 
 ```
   cd examples/

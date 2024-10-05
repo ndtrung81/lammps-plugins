@@ -328,10 +328,6 @@ if(Kokkos_FOUND)
     target_include_directories(Kokkos_src INTERFACE "${KokkosSIMD}")
 
     set_target_properties(Kokkos_src PROPERTIES INTERFACE_COMPILE_OPTIONS "${KokkosCompileOptions}")
-
-    #message(STATUS "Kokkos compile options: ${KokkosCompileOptions}")
-    message(STATUS "Kokkos options: ${Kokkos_OPTIONS}")
-    message(STATUS "Kokkos devices: ${Kokkos_DEVICES}")
 else()
     message(STATUS
         "Kokkos support is not enabled. If you built LAMMPS with Kokkos,"
