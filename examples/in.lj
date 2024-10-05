@@ -19,7 +19,7 @@ mass            1 1.0
 
 velocity        all create 1.44 87287 loop geom
 
-plugin          load lammps-plugins/build/lj2plugin.so
+plugin          load /home/ndtrung/Codes/lammps-plugins/build/lj2plugin.so
 
 pair_style      lj/cut2 2.5
 pair_coeff      * * 1.0 1.0
