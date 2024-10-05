@@ -5,9 +5,15 @@
 
 #include <cstring>
 
+#include "pair_lj_cut2.h"
 #include "pair_lj_cut2_kokkos.h"
 
 using namespace LAMMPS_NS;
+
+static Pair *ljcut2creator(LAMMPS *lmp)
+{
+    return new PairLJCut2(lmp);
+}
 
 static Pair *ljcut2kkcreator(LAMMPS *lmp)
 {
@@ -32,22 +38,28 @@ extern "C" void lammpsplugin_init(void *lmp, void *handle, void *regfunc)
   // register plain lj/cut2 pair style
   plugin.version = LAMMPS_VERSION;
   plugin.style = "pair";
-  plugin.name = "lj/cut2/kk";
+  plugin.name = "lj/cut2";
   plugin.info = "lj/cut variant pair style v1.0";
   plugin.author = "Trung Nguyen (ndactrung@gmail.com)";
-  plugin.creator.v1 = (lammpsplugin_factory1 *) &ljcut2kkcreator;
+  plugin.creator.v1 = (lammpsplugin_factory1 *) &ljcut2creator;
   plugin.handle = handle;
+  (*register_plugin)(&plugin, lmp);
+
+  // register lj/cut2/kk pair style
+  plugin.name = "lj/cut2/kk";
+  plugin.info = "lj/cut/kk variant pair style v1.0";
+  plugin.creator.v1 = (lammpsplugin_factory1 *) &ljcut2kkcreator;
   (*register_plugin)(&plugin, lmp);
 
   // also register lj/cut2/kk/host pair style. only need to update changed fields
   plugin.name = "lj/cut2/kk/host";
-  plugin.info = "lj/cut variant pair style for Kokkos v1.0";
+  plugin.info = "lj/cut/kk variant pair style for Kokkos v1.0";
   plugin.creator.v1 = (lammpsplugin_factory1 *) &ljcut2kkhostcreator;
   (*register_plugin)(&plugin, lmp);
 
   // also register lj/cut2/kk/device pair style. only need to update changed fields
   plugin.name = "lj/cut2/kk/device";
-  plugin.info = "lj/cut variant pair style for Kokkos v1.0";
+  plugin.info = "lj/cut/kk variant pair style for Kokkos v1.0";
   plugin.creator.v1 = (lammpsplugin_factory1 *) &ljcut2kkdevicecreator;
   (*register_plugin)(&plugin, lmp);
 }

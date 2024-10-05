@@ -85,7 +85,7 @@ target_include_directories(morse2plugin PRIVATE "${LAMMPS_HEADER_DIR}/OPENMP")
 target_link_libraries(morse2plugin PRIVATE "${LAMMPS_BUILD_DIR}/liblammps.so")
 target_include_directories(morse2plugin PRIVATE ${MPI_CXX_INCLUDE_DIRS})
 
-add_library(lj2plugin MODULE lj2plugin.cpp pair_lj_cut2_kokkos.cpp)
+add_library(lj2plugin MODULE lj2plugin.cpp pair_lj_cut2.cpp pair_lj_cut2_kokkos.cpp)
 target_link_libraries(lj2plugin PUBLIC LAMMPS::src LAMMPS::lammps)
 
 if(Kokkos_FOUND)

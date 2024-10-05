@@ -18,7 +18,7 @@ LAMMPS is already built with KOKKOS suppport with CUDA backend
   make install
 ```
 
-The installation folder `CMAKE_INSTALL_PREFIX` is needed for the plugin CMake build to find `LAMMPS_Targets.cmake`, `LAMMPSConfig.cmake` and , `LAMMPSConfigVersion.cmake`.
+The installation folder `CMAKE_INSTALL_PREFIX` is needed for the plugin CMake build to find `LAMMPS_Targets.cmake`, `LAMMPSConfig.cmake` and `LAMMPSConfigVersion.cmake`.
 
 Without the `make install` step  `LAMMPS_Targets.cmake` is buried under a temporary folder under `build/CMakeFiles/Export`.
 
@@ -33,7 +33,7 @@ Without the `make install` step  `LAMMPS_Targets.cmake` is buried under a tempor
 
   export LAMMPS_INSTALL_DIR=/path/to/lammps/install
   export LAMMPS_SOURCE_DIR=/path/to/lammps/src
-  export LAMMPS_BUILD_DIR=//path/to/lammps/build
+  export LAMMPS_BUILD_DIR=/path/to/lammps/build
   export KOKKOS_ROOT=$LAMMPS_BUILD_DIR/cmake_packages/Kokkos
 
   cmake ../src -DLAMMPS_ROOT=$LAMMPS_INSTALL_DIR \
@@ -47,7 +47,7 @@ Without the `make install` step  `LAMMPS_Targets.cmake` is buried under a tempor
 
 The variable `KOKKOS_ROOT` is for the location where the Kokkos cmake settings `KokkosConfig.cmake`, `KokkosConfigCommon.cmake`, `KokkosConfigVersion.cmake` and `KokkosTargets.cmake` are located.
 
-The build when complete will generate `morse2plugin.so` and lj2plugin.so in the `build` folder.
+The build when complete will generate `morse2plugin.so` and `lj2plugin.so` in the `build` folder.
 
 ## Test
 
