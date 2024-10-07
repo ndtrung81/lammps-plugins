@@ -19,7 +19,7 @@ mass            1 1.0
 
 velocity        all create 1.44 87287 loop geom
 
-plugin          load /home/ndtrung/Codes/plugins/build/morse2plugin.so
+plugin          load /home/ndtrung/Codes/lammps-plugins/build/morse2plugin.so
 
 pair_style      morse2 2.5
 pair_coeff      * * 100.0 2.0 1.5

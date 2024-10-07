@@ -80,37 +80,41 @@ if (NOT CMAKE_BUILD_TYPE)
 endif()
 
 add_library(morse2plugin MODULE morse2plugin.cpp pair_morse2.cpp pair_morse2_omp.cpp)
-target_include_directories(morse2plugin PRIVATE "${LAMMPS_HEADER_DIR}")
+target_link_libraries(morse2plugin PUBLIC LAMMPS::src LAMMPS::lammps)
 target_include_directories(morse2plugin PRIVATE "${LAMMPS_HEADER_DIR}/OPENMP")
-target_link_libraries(morse2plugin PRIVATE "${LAMMPS_BUILD_DIR}/liblammps.so")
-target_include_directories(morse2plugin PRIVATE ${MPI_CXX_INCLUDE_DIRS})
 
 add_library(lj2plugin MODULE lj2plugin.cpp pair_lj_cut2.cpp pair_lj_cut2_kokkos.cpp)
 target_link_libraries(lj2plugin PUBLIC LAMMPS::src LAMMPS::lammps)
+
+add_library(nve2plugin MODULE nve2plugin.cpp fix_nve2.cpp fix_nve2_kokkos.cpp)
+target_link_libraries(nve2plugin PRIVATE LAMMPS::src LAMMPS::lammps)
 
 if(Kokkos_FOUND)
     get_target_property(KokkosCompileOptions Kokkos::src INTERFACE_COMPILE_OPTIONS)
     target_link_libraries(lj2plugin PUBLIC Kokkos::src)
     target_compile_options(lj2plugin PRIVATE ${KokkosCompileOptions})
+    
+    target_link_libraries(nve2plugin PUBLIC Kokkos::src)
+    target_compile_options(nve2plugin PRIVATE ${KokkosCompileOptions})
 endif()
 
-set_target_properties(morse2plugin lj2plugin PROPERTIES PREFIX "" SUFFIX ".so")
+set_target_properties(morse2plugin lj2plugin nve2plugin PROPERTIES PREFIX "" SUFFIX ".so")
 
 # MacOS seems to need this
 if(CMAKE_SYSTEM_NAME STREQUAL Darwin)
-    set_target_properties(morse2plugin lj2plugin
+    set_target_properties(morse2plugin lj2plugin nve2plugin
         PROPERTIES LINK_FLAGS "-Wl,-undefined,dynamic_lookup")
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     # tell CMake to export all symbols to a .dll on Windows with special case for MinGW cross-compilers
     set_target_properties(morse2plugin lj2plugin
         PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
     if(CMAKE_CROSSCOMPILING)
-        set_target_properties(morse2plugin lj2plugin PROPERTIES LINK_FLAGS "-Wl,--export-all-symbols")
+        set_target_properties(morse2plugin lj2plugin nve2plugin PROPERTIES LINK_FLAGS "-Wl,--export-all-symbols")
     endif()
 else()
-  set_target_properties(morse2plugin lj2plugin PROPERTIES
+  set_target_properties(morse2plugin lj2plugin nve2plugin PROPERTIES
       LINK_FLAGS "-rdynamic")
 endif()
 
 add_custom_target(plugins ALL ${CMAKE_COMMAND} -E echo "Building Plugins"
-    DEPENDS morse2plugin lj2plugin)
+    DEPENDS morse2plugin lj2plugin nve2plugin)
