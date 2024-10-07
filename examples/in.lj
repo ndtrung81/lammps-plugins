@@ -20,6 +20,7 @@ mass            1 1.0
 velocity        all create 1.44 87287 loop geom
 
 plugin          load /home/ndtrung/Codes/lammps-plugins/build/lj2plugin.so
+plugin          load /home/ndtrung/Codes/lammps-plugins/build/nve2plugin.so
 
 pair_style      lj/cut2 2.5
 pair_coeff      * * 1.0 1.0
@@ -27,6 +28,6 @@ pair_coeff      * * 1.0 1.0
 neighbor        0.3 bin
 neigh_modify    delay 0 every 20 check no
 
-fix             1 all nve
+fix             1 all nve2
 
 run             100
