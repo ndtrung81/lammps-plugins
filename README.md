@@ -6,7 +6,7 @@ Specifically, we re-implement the pair style `lj/cut2/kk` and fix style `nve2/kk
 
 ## Implementation notes
 
-The script `cmake/Modules/FindLAMMPSTool.cmake` is based on the implementation by @pabloferz in the project [`lammps-dlext`](https://github.com/SSAGESLabs/lammps-dlext) to detect LAMMPS and KOKKOS targets. This script finds the LAMMPS package, and retrieves the include directories, compile options and LAMMPS flags from the generated LAMMPS targets.
+The script `cmake/Modules/FindLAMMPSTool.cmake` is based on the implementation by Pablo Zubieta [@pabloferz](https://github.com/pabloferz) in the [`lammps-dlext`](https://github.com/SSAGESLabs/lammps-dlext) project to detect LAMMPS and KOKKOS targets. This script finds the LAMMPS package, and retrieves the include directories, compile options and LAMMPS flags from the generated LAMMPS targets.
 
 The script `cmake/CMakeLists.txt` is based on the version provided by `examples/plugins` in the LAMMPS repo.
 
@@ -56,7 +56,7 @@ The KOKKOS CMake configuration and generated targets are available under `build/
 ```
 
 
-The variable `KOKKOS_ROOT` is for the location where the Kokkos cmake settings `KokkosConfig.cmake`, `KokkosConfigCommon.cmake`, `KokkosConfigVersion.cmake` and `KokkosTargets.cmake` are located.
+The variable `KOKKOS_ROOT` points to the location where the Kokkos cmake settings `KokkosConfig.cmake`, `KokkosConfigCommon.cmake`, `KokkosConfigVersion.cmake` and `KokkosTargets.cmake` are located.
 
 The build when complete will generate `morse2plugin.so`, `lj2plugin.so` and `nve2plugin.so` in the `build` folder.
 
