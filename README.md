@@ -4,9 +4,17 @@ This project illustrates how to build LAMMPS plugins with Kokkos-derived pair an
 
 Specifically, we re-implement the pair style `lj/cut2/kk` and fix style `nve2/kk` which are essentially the copy of pair `lj/cut/kk` and fix `nve/kk` into separate plugins.  In the input script `in.lj` under `examples/` we load the plugins and use these styles with the KOKKOS package and `kk` suffix.
 
+## Implementation notes
+
+The script `cmake/Modules/FindLAMMPSTool.cmake` is based on the implementation by @pabloferz in the project [`lammps-dlext`](https://github.com/SSAGESLabs/lammps-dlext) to detect LAMMPS and KOKKOS targets for the necessary include directories.
+
+The script `cmake/CMakeLists.txt` is based on the version provided by `examples/plugins` in the LAMMPS repo.
+
+Comments and suggestions via pull requests are welcome.
+
 ## Prerequisite
 
-LAMMPS is already built with KOKKOS suppport with CUDA backend
+LAMMPS should already be built with KOKKOS suppport with CUDA backend (optional but recommended):
 
 ```
   git clone https://github.com/lammps/lammps.git
@@ -25,7 +33,6 @@ The installation folder `CMAKE_INSTALL_PREFIX` is needed for the plugin CMake bu
 Without the `make install` step  `LAMMPS_Targets.cmake` is buried under a temporary folder under `build/CMakeFiles/Export`.
 
 ## Download and build the plugin
-
 
 ```
   git clone https://github.com/ndtrung81/lammps-plugins.git
@@ -71,5 +78,7 @@ pair_coeff      * * 1.0 1.0
 
 fix             1 all nve2
 ```
+
+Here `-k on g 1` is for the CUDA backend of KOKKOS. If you built KOKKOS with OpenMP backend, then you need to switch to something like `-k on t 2`.
 
 
