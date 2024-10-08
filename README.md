@@ -36,7 +36,7 @@ Without the `make install` step  `LAMMPS_Targets.cmake` is buried under a tempor
   export LAMMPS_BUILD_DIR=/path/to/lammps/build
   export KOKKOS_ROOT=$LAMMPS_BUILD_DIR/cmake_packages/Kokkos
 
-  cmake ../src -DLAMMPS_ROOT=$LAMMPS_INSTALL_DIR \
+  cmake ../cmake -DLAMMPS_ROOT=$LAMMPS_INSTALL_DIR \
     -DKokkos_ROOT=$KOKKOS_ROOT \
     -DCMAKE_CXX_COMPILER=$LAMMPS_SOURCE_DIR/../lib/kokkos/bin/nvcc_wrapper \
     -DLAMMPS_SOURCE_DIR=$LAMMPS_SOURCE_DIR \
@@ -47,7 +47,7 @@ Without the `make install` step  `LAMMPS_Targets.cmake` is buried under a tempor
 
 The variable `KOKKOS_ROOT` is for the location where the Kokkos cmake settings `KokkosConfig.cmake`, `KokkosConfigCommon.cmake`, `KokkosConfigVersion.cmake` and `KokkosTargets.cmake` are located.
 
-The build when complete will generate `morse2plugin.so` and `lj2plugin.so` in the `build` folder.
+The build when complete will generate `morse2plugin.so`, `lj2plugin.so` and `nve2plugin.so` in the `build` folder.
 
 ## Test
 
@@ -62,9 +62,12 @@ where the `in.lj` script loads the plugin with the command and uses the pair sty
 
 ```
 plugin          load /path/to/lammps-plugins/build/lj2plugin.so
+plugin          load /path/to/lammps-plugins/build/nve2plugin.so
 
 pair_style      lj/cut2 2.5
 pair_coeff      * * 1.0 1.0
+
+fix             1 all nve2
 ```
 
 
