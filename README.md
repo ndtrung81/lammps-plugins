@@ -1,6 +1,8 @@
 # lammps-plugins
 
-This project illustrates how to build LAMMPS plugins with Kokkos-derived pair styles out of the LAMMPS KOKKOS source tree.
+This project illustrates how to build LAMMPS plugins with Kokkos-derived pair and fix styles out of the LAMMPS KOKKOS source tree. This work could be helpful for numerous projects which require LAMMPS built with the KOKKOS package and then add their custom (pair) styles with Kokkos variants.  The workaround has been to copy the source code of the custom styles into the source tree of a copy of LAMMPS repo and patch the CMakeLists.txt with the new Kokkos pair styles. 
+
+Specifically, we re-implement the pair style `lj/cut2/kk` and fix style `nve2/kk` which are essentially the copy of pair `lj/cut/kk` and fix `nve/kk` into separate plugins.  In the input script `in.lj` under `examples/` we load the plugins and use these styles with the KOKKOS package and `kk` suffix.
 
 ## Prerequisite
 
