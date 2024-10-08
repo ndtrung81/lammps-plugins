@@ -1,12 +1,12 @@
 # lammps-plugins
 
-This project illustrates how to build LAMMPS plugins with Kokkos-derived pair and fix styles out of the LAMMPS KOKKOS source tree. This work could be helpful for numerous projects which require LAMMPS built with the KOKKOS package and then add their custom (pair) styles with Kokkos variants.  The workaround has been to copy the source code of the custom styles into the source tree of a copy of LAMMPS repo and patch the CMakeLists.txt with the new Kokkos pair styles. 
+This project illustrates how to build LAMMPS plugins with Kokkos-derived pair and fix styles out of the LAMMPS KOKKOS source tree. This work could be helpful for numerous projects which require LAMMPS built with the KOKKOS package and then add their custom (pair) styles with Kokkos variants.  One workaround has been to copy the source code of the custom styles into the source tree of a copy of LAMMPS repo and patch the CMakeLists.txt with the new Kokkos pair styles. 
 
 Specifically, we re-implement the pair style `lj/cut2/kk` and fix style `nve2/kk` which are essentially the copy of pair `lj/cut/kk` and fix `nve/kk` into separate plugins.  In the input script `in.lj` under `examples/` we load the plugins and use these styles with the KOKKOS package and `kk` suffix.
 
 ## Implementation notes
 
-The script `cmake/Modules/FindLAMMPSTool.cmake` is based on the implementation by @pabloferz in the project [`lammps-dlext`](https://github.com/SSAGESLabs/lammps-dlext) to detect LAMMPS and KOKKOS targets for the necessary include directories.
+The script `cmake/Modules/FindLAMMPSTool.cmake` is based on the implementation by @pabloferz in the project [`lammps-dlext`](https://github.com/SSAGESLabs/lammps-dlext) to detect LAMMPS and KOKKOS targets. This script finds the LAMMPS package, and retrieves the include directories, compile options and LAMMPS flags from the generated LAMMPS targets.
 
 The script `cmake/CMakeLists.txt` is based on the version provided by `examples/plugins` in the LAMMPS repo.
 
@@ -28,11 +28,13 @@ LAMMPS should already be built with KOKKOS suppport with CUDA backend (optional 
   make install
 ```
 
-The installation folder `CMAKE_INSTALL_PREFIX` is needed for the plugin CMake build to find `LAMMPS_Targets.cmake`, `LAMMPSConfig.cmake` and `LAMMPSConfigVersion.cmake`.
+The installation folder `CMAKE_INSTALL_PREFIX` and the `make install` step are needed for the plugin CMake build to find `LAMMPS_Targets.cmake`, `LAMMPSConfig.cmake` and `LAMMPSConfigVersion.cmake`.
 
-Without the `make install` step  `LAMMPS_Targets.cmake` is buried under a temporary folder under `build/CMakeFiles/Export`.
+Without the `make install` step,  `LAMMPS_Targets.cmake` is buried under a temporary folder under `build/CMakeFiles/Export`.
 
-## Download and build the plugin
+The KOKKOS CMake configuration and generated targets are available under `build/cmake_packages/Kokkos` (see below).
+
+## Download and build the plugins
 
 ```
   git clone https://github.com/ndtrung81/lammps-plugins.git
@@ -46,10 +48,10 @@ Without the `make install` step  `LAMMPS_Targets.cmake` is buried under a tempor
   export KOKKOS_ROOT=$LAMMPS_BUILD_DIR/cmake_packages/Kokkos
 
   cmake ../cmake -DLAMMPS_ROOT=$LAMMPS_INSTALL_DIR \
-    -DKokkos_ROOT=$KOKKOS_ROOT \
-    -DCMAKE_CXX_COMPILER=$LAMMPS_SOURCE_DIR/../lib/kokkos/bin/nvcc_wrapper \
-    -DLAMMPS_SOURCE_DIR=$LAMMPS_SOURCE_DIR \
-    -DLAMMPS_BUILD_DIR=$LAMMPS_BUILD_DIR
+       -DKokkos_ROOT=$KOKKOS_ROOT \
+       -DCMAKE_CXX_COMPILER=$LAMMPS_SOURCE_DIR/../lib/kokkos/bin/nvcc_wrapper \
+       -DLAMMPS_SOURCE_DIR=$LAMMPS_SOURCE_DIR \
+       -DLAMMPS_BUILD_DIR=$LAMMPS_BUILD_DIR
   make
 ```
 
@@ -64,10 +66,10 @@ The `examples` folder contains the input scripts to test the plugins.
 
 ```
   cd examples/
-  LAMMPS_INSTALL_DIR/bin/lmp -in in.lj -k on g 1 -sf kk
+  $LAMMPS_INSTALL_DIR/bin/lmp -in in.lj -k on g 1 -sf kk
 ```
 
-where the `in.lj` script loads the plugin with the command and uses the pair styles
+where the `in.lj` script loads the plugins and uses the pair and fix styles
 
 ```
 plugin          load /path/to/lammps-plugins/build/lj2plugin.so
