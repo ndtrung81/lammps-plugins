@@ -34,15 +34,16 @@ The installation folder `CMAKE_INSTALL_PREFIX` and the `make install` step are n
 ```
   git clone https://github.com/ndtrung81/lammps-plugins.git
   cd lammps-plugins
-  git submodule update --recursive
+  git submodule update --init --recursive
 
   export LAMMPS_INSTALL_DIR=/path/to/lammps/install
   export LAMMPS_SOURCE_DIR=/path/to/lammps/src
 
   cmake -B build . -DLAMMPS_ROOT=$LAMMPS_INSTALL_DIR/lib/cmake/LAMMPS \
-       -DLAMMPS_SOURCE_DIR=$LAMMPS_SOURCE_DIR -DKokkos_ENABLE_CUDA=on
+       -DLAMMPS_SOURCE_DIR=$LAMMPS_SOURCE_DIR -DKokkos_ENABLE_CUDA=on -DKokkos_ARCH_AMPERE80=on
   cmake --build build
 ```
+It is important to match the Kokkos configuration with the LAMMPS build with the KOKKOS package above.
 The build when complete will generate `morse2plugin.so`, `lj2plugin.so` and `nve2plugin.so` in the `build` folder.
 
 ## Test
