@@ -52,16 +52,20 @@ else()
 endif()
 
 # find the build directory where liblammps.so is located
-if(NOT LAMMPS_BUILD_DIR)
-    # when built inside of the LAMMPS package LAMMPS_BUILD_DIR is the same as the build directory
-    get_filename_component(LAMMPS_BUILD_DIR ${CMAKE_BUILD_DIRECTORY} ABSOLUTE)
-else()
-    # when built outside of the LAMMPS package LAMMPS_BUILD_DIR needs to be specified
-    message(STATUS "LAMMPS build directory specified: ${LAMMPS_BUILD_DIR}")
-endif()
+#if(NOT LAMMPS_BUILD_DIR)
+#    # when built inside of the LAMMPS package LAMMPS_BUILD_DIR is the same as the build directory
+#    get_filename_component(LAMMPS_BUILD_DIR ${CMAKE_BUILD_DIRECTORY} ABSOLUTE)
+#else()
+#    # when built outside of the LAMMPS package LAMMPS_BUILD_DIR needs to be specified
+#    message(STATUS "LAMMPS build directory specified: ${LAMMPS_BUILD_DIR}")
+#endif()
 
-# C++17 is required
-set(CMAKE_CXX_STANDARD 17)
+find_package(Kokkos 4.7 REQUIRED CONFIG) # Find Kokkos version 4.2 or any newer version
+
+
+
+# C++20 is required
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Need -restrict with Intel compilers
@@ -89,11 +93,11 @@ target_include_directories(morse2plugin PRIVATE "${LAMMPS_HEADER_DIR}/OPENMP")
 
 add_library(lj2plugin MODULE ${PLUGINS_SOURCE_DIR}/lj2plugin.cpp ${PLUGINS_SOURCE_DIR}/pair_lj_cut2.cpp ${PLUGINS_SOURCE_DIR}/pair_lj_cut2_kokkos.cpp)
 target_include_directories(lj2plugin PRIVATE "${PLUGINS_SOURCE_DIR}")
-target_link_libraries(lj2plugin PUBLIC LAMMPS::src LAMMPS::lammps)
+target_link_libraries(lj2plugin PUBLIC LAMMPS::src LAMMPS::lammps Kokkos::kokkos)
 
 add_library(nve2plugin MODULE ${PLUGINS_SOURCE_DIR}/nve2plugin.cpp ${PLUGINS_SOURCE_DIR}/fix_nve2.cpp ${PLUGINS_SOURCE_DIR}/fix_nve2_kokkos.cpp)
 target_include_directories(nve2plugin PRIVATE "${PLUGINS_SOURCE_DIR}")
-target_link_libraries(nve2plugin PRIVATE LAMMPS::src LAMMPS::lammps)
+target_link_libraries(nve2plugin PRIVATE LAMMPS::src LAMMPS::lammps Kokkos::kokkos)
 
 if(Kokkos_FOUND)
     get_target_property(KokkosCompileOptions Kokkos::src INTERFACE_COMPILE_OPTIONS)
