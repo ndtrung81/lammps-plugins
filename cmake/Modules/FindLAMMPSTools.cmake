@@ -308,7 +308,7 @@ endif()
 add_library(LAMMPS_src INTERFACE)
 add_library(LAMMPS::src ALIAS LAMMPS_src)
 
-target_include_directories(LAMMPS_src INTERFACE "${lammps_SOURCE_DIR}/src")
+target_include_directories(LAMMPS_src INTERFACE "${LAMMPS_SOURCE_DIR}")
 
 find_package(Kokkos QUIET)
 if(Kokkos_FOUND)

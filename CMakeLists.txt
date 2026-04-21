@@ -11,15 +11,18 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
       "Please remove CMakeCache.txt and CMakeFiles first.")
 endif()
 
-project(plugins VERSION 1.0 LANGUAGES C)
+project(plugins VERSION 1.0 LANGUAGES CXX)
 
-get_filename_component(PLUGINS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/.. ABSOLUTE)
-set(PLUGINS_SOURCE_DIR     ${PLUGINS_DIR}/src)
+get_filename_component(PLUGINS_DIR ${CMAKE_CURRENT_SOURCE_DIR} ABSOLUTE)
+#set(PLUGINS_SOURCE_DIR     ${PLUGINS_DIR}/src)
+set(PLUGINS_SOURCE_DIR     src)
 
-set(PROJECT_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/Modules")
+
+
+set(PROJECT_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_MODULE_PATH})
 
-include("${PROJECT_MODULE_PATH}/FetchCPM.cmake")
+#include("${PROJECT_MODULE_PATH}/FetchCPM.cmake")
 include("${PROJECT_MODULE_PATH}/FindLAMMPSTools.cmake")
 
 # when this file is included as subdirectory in the LAMMPS build, many settings are directly imported
@@ -51,18 +54,13 @@ else()
     endif()
 endif()
 
-# find the build directory where liblammps.so is located
-#if(NOT LAMMPS_BUILD_DIR)
-#    # when built inside of the LAMMPS package LAMMPS_BUILD_DIR is the same as the build directory
-#    get_filename_component(LAMMPS_BUILD_DIR ${CMAKE_BUILD_DIRECTORY} ABSOLUTE)
-#else()
-#    # when built outside of the LAMMPS package LAMMPS_BUILD_DIR needs to be specified
-#    message(STATUS "LAMMPS build directory specified: ${LAMMPS_BUILD_DIR}")
-#endif()
 
 #find_package(Kokkos 4.7 REQUIRED CONFIG) # Find Kokkos version 4.2 or any newer version
 
-add_subdirectory(${PLUGINS_DIR}/tpls/kokkos  ${CMAKE_BINARY_DIR}/kokkos)
+#add_subdirectory(${PLUGINS_DIR}/tpls/kokkos  ${CMAKE_BINARY_DIR}/kokkos)
+set(BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON CACHE BOOL "" FORCE)
+add_subdirectory(tpls/kokkos)
 
 # C++20 is required
 set(CMAKE_CXX_STANDARD 20)
@@ -93,10 +91,12 @@ target_include_directories(morse2plugin PRIVATE "${LAMMPS_HEADER_DIR}/OPENMP")
 
 add_library(lj2plugin MODULE ${PLUGINS_SOURCE_DIR}/lj2plugin.cpp ${PLUGINS_SOURCE_DIR}/pair_lj_cut2.cpp ${PLUGINS_SOURCE_DIR}/pair_lj_cut2_kokkos.cpp)
 target_include_directories(lj2plugin PRIVATE "${PLUGINS_SOURCE_DIR}")
+target_include_directories(lj2plugin PRIVATE "${LAMMPS_HEADER_DIR}/KOKKOS")
 target_link_libraries(lj2plugin PUBLIC LAMMPS::src LAMMPS::lammps Kokkos::kokkos)
 
 add_library(nve2plugin MODULE ${PLUGINS_SOURCE_DIR}/nve2plugin.cpp ${PLUGINS_SOURCE_DIR}/fix_nve2.cpp ${PLUGINS_SOURCE_DIR}/fix_nve2_kokkos.cpp)
 target_include_directories(nve2plugin PRIVATE "${PLUGINS_SOURCE_DIR}")
+target_include_directories(nve2plugin PRIVATE "${LAMMPS_HEADER_DIR}/KOKKOS")
 target_link_libraries(nve2plugin PRIVATE LAMMPS::src LAMMPS::lammps Kokkos::kokkos)
 
 if(Kokkos_FOUND)
