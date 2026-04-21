@@ -20,19 +20,14 @@ LAMMPS should already be built with KOKKOS suppport with CUDA backend (optional 
   git clone https://github.com/lammps/lammps.git
   cd lammps
   mkdir install
-  mkdir build && cd build
-  cmake ../cmake -C ../cmake/preset/basic.cmake -DBUILD_MPI=on -DPKG_PLUGIN=on \
+  cmake ../cmake -B build -C ../cmake/preset/basic.cmake -DBUILD_MPI=on -DPKG_PLUGIN=on \
        -DPKG_KOKKOS=on -DKokkos_ENABLE_CUDA -Kokkos_ARCH_AMPERE80=on \
        -DCMAKE_INSTALL_PREFIX=../install
-  make -j4
+  cmake --build build -j4
   make install
 ```
 
 The installation folder `CMAKE_INSTALL_PREFIX` and the `make install` step are needed for the plugin CMake build to find `LAMMPS_Targets.cmake`, `LAMMPSConfig.cmake` and `LAMMPSConfigVersion.cmake`.
-
-Without the `make install` step,  `LAMMPS_Targets.cmake` is buried under a temporary folder under `build/CMakeFiles/Export`.
-
-The KOKKOS CMake configuration and generated targets are available under `build/cmake_packages/Kokkos` (see below).
 
 ## Download and build the plugins
 
@@ -40,24 +35,14 @@ The KOKKOS CMake configuration and generated targets are available under `build/
   git clone https://github.com/ndtrung81/lammps-plugins.git
 
   cd lammps-plugins
-  mkdir build && cd build
 
   export LAMMPS_INSTALL_DIR=/path/to/lammps/install
   export LAMMPS_SOURCE_DIR=/path/to/lammps/src
-  export LAMMPS_BUILD_DIR=/path/to/lammps/build
-  export KOKKOS_ROOT=$LAMMPS_BUILD_DIR/cmake_packages/Kokkos
 
-  cmake ../cmake -DLAMMPS_ROOT=$LAMMPS_INSTALL_DIR \
-       -DKokkos_ROOT=$KOKKOS_ROOT \
-       -DCMAKE_CXX_COMPILER=$LAMMPS_SOURCE_DIR/../lib/kokkos/bin/nvcc_wrapper \
-       -DLAMMPS_SOURCE_DIR=$LAMMPS_SOURCE_DIR \
-       -DLAMMPS_BUILD_DIR=$LAMMPS_BUILD_DIR
-  make
+  cmake -B build . -DLAMMPS_ROOT=$LAMMPS_INSTALL_DIR/lib/cmake/LAMMPS \
+       -DLAMMPS_SOURCE_DIR=$LAMMPS_SOURCE_DIR -DKokkos_ENABLE_CUDA=on
+  cmake --build build
 ```
-
-
-The variable `KOKKOS_ROOT` points to the location where the Kokkos cmake settings `KokkosConfig.cmake`, `KokkosConfigCommon.cmake`, `KokkosConfigVersion.cmake` and `KokkosTargets.cmake` are located.
-
 The build when complete will generate `morse2plugin.so`, `lj2plugin.so` and `nve2plugin.so` in the `build` folder.
 
 ## Test
