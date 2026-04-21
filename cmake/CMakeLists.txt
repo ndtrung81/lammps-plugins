@@ -60,9 +60,9 @@ endif()
 #    message(STATUS "LAMMPS build directory specified: ${LAMMPS_BUILD_DIR}")
 #endif()
 
-find_package(Kokkos 4.7 REQUIRED CONFIG) # Find Kokkos version 4.2 or any newer version
+#find_package(Kokkos 4.7 REQUIRED CONFIG) # Find Kokkos version 4.2 or any newer version
 
-
+add_subdirectory(${PLUGINS_DIR}/tpls/kokkos  ${CMAKE_BINARY_DIR}/kokkos)
 
 # C++20 is required
 set(CMAKE_CXX_STANDARD 20)

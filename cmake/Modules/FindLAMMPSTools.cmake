@@ -274,7 +274,7 @@ find_lammps()
 
 message(STATUS "Found LAMMPS at ${LAMMPS_ROOT} (version ${LAMMPS_VERSION})")
 
-fetch_lammps(${LAMMPS_tag})
+#fetch_lammps(${LAMMPS_tag})
 
 if(NOT CMAKE_BUILD_TYPE)
     if(${LAMMPS_VERSION} GREATER 20190618)
