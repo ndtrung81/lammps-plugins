@@ -310,27 +310,4 @@ add_library(LAMMPS::src ALIAS LAMMPS_src)
 
 target_include_directories(LAMMPS_src INTERFACE "${LAMMPS_SOURCE_DIR}")
 
-find_package(Kokkos QUIET)
-if(Kokkos_FOUND)
-    message(STATUS "Kokkos support has been enabled (version ${Kokkos_VERSION})")
-    get_target_property(KokkosCore       Kokkos::kokkoscore INTERFACE_INCLUDE_DIRECTORIES)
-    get_target_property(KokkosContainers Kokkos::kokkoscontainers INTERFACE_INCLUDE_DIRECTORIES)
-    get_target_property(KokkosAlgorithms Kokkos::kokkosalgorithms INTERFACE_INCLUDE_DIRECTORIES)
-    get_target_property(KokkosSIMD       Kokkos::kokkossimd INTERFACE_INCLUDE_DIRECTORIES)
-    get_target_property(KokkosCompileOptions  Kokkos::kokkoscore INTERFACE_COMPILE_OPTIONS)
 
-    add_library(Kokkos_src INTERFACE)
-    add_library(Kokkos::src ALIAS Kokkos_src)
-    target_include_directories(Kokkos_src INTERFACE "${lammps_SOURCE_DIR}/src/KOKKOS")
-    target_include_directories(Kokkos_src INTERFACE "${KokkosCore}")
-    target_include_directories(Kokkos_src INTERFACE "${KokkosContainers}")
-    target_include_directories(Kokkos_src INTERFACE "${KokkosAlgorithms}")
-    target_include_directories(Kokkos_src INTERFACE "${KokkosSIMD}")
-
-    set_target_properties(Kokkos_src PROPERTIES INTERFACE_COMPILE_OPTIONS "${KokkosCompileOptions}")
-else()
-    message(STATUS
-        "Kokkos support is not enabled. If you built LAMMPS with Kokkos,"
-        "make sure that CMake if able to find it by providing the Kokkos_ROOT."
-    )
-endif()

@@ -33,8 +33,8 @@ The installation folder `CMAKE_INSTALL_PREFIX` and the `make install` step are n
 
 ```
   git clone https://github.com/ndtrung81/lammps-plugins.git
-
   cd lammps-plugins
+  git submodule update --recursive
 
   export LAMMPS_INSTALL_DIR=/path/to/lammps/install
   export LAMMPS_SOURCE_DIR=/path/to/lammps/src

@@ -17,8 +17,6 @@ get_filename_component(PLUGINS_DIR ${CMAKE_CURRENT_SOURCE_DIR} ABSOLUTE)
 #set(PLUGINS_SOURCE_DIR     ${PLUGINS_DIR}/src)
 set(PLUGINS_SOURCE_DIR     src)
 
-
-
 set(PROJECT_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_MODULE_PATH})
 
@@ -54,10 +52,7 @@ else()
     endif()
 endif()
 
-
-#find_package(Kokkos 4.7 REQUIRED CONFIG) # Find Kokkos version 4.2 or any newer version
-
-#add_subdirectory(${PLUGINS_DIR}/tpls/kokkos  ${CMAKE_BINARY_DIR}/kokkos)
+# Kokkos build shared libs
 set(BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON CACHE BOOL "" FORCE)
 add_subdirectory(tpls/kokkos)
