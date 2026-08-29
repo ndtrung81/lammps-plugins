@@ -274,7 +274,7 @@ find_lammps()
 
 message(STATUS "Found LAMMPS at ${LAMMPS_ROOT} (version ${LAMMPS_VERSION})")
 
-fetch_lammps(${LAMMPS_tag})
+#fetch_lammps(${LAMMPS_tag})
 
 if(NOT CMAKE_BUILD_TYPE)
     if(${LAMMPS_VERSION} GREATER 20190618)
@@ -308,7 +308,7 @@ endif()
 add_library(LAMMPS_src INTERFACE)
 add_library(LAMMPS::src ALIAS LAMMPS_src)
 
-target_include_directories(LAMMPS_src INTERFACE "${lammps_SOURCE_DIR}/src")
+target_include_directories(LAMMPS_src INTERFACE "${LAMMPS_SOURCE_DIR}")
 
 find_package(Kokkos QUIET)
 if(Kokkos_FOUND)
