@@ -103,6 +103,14 @@ function(get_lammps_tag version)
     # the provided `version`.
     set(MONTHS _ Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec)
 
+    # Newer LAMMPS reports a version like "2026.7.4.99" rather than a bare
+    # YYYYMMDD stamp.  Only the YYYYMMDD form can be mapped onto a git tag, so
+    # bail out quietly instead of erroring out in list(GET) below.
+    if(NOT "${version}" MATCHES "^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]")
+        set(LAMMPS_tag "" PARENT_SCOPE)
+        return()
+    endif()
+
     string(REGEX MATCH "([0-9][0-9][0-9][0-9])([0-9][0-9])([0-9][0-9]).*" _ "${version}")
     set(year ${CMAKE_MATCH_1})
     list(GET MONTHS ${CMAKE_MATCH_2} month)
@@ -208,6 +216,115 @@ function(copy_target_property_configs src dst property)
     endif()
 endfunction()
 
+#     check_kokkos_config_matches_lammps(include_dirs)
+#
+# Compares the KokkosCore_config.h that the plugins will be compiled against
+# with the one that was compiled into liblammps, and aborts on any difference.
+#
+# Kokkos configuration macros do not participate in name mangling, so a Kokkos
+# whose configuration differs from the one LAMMPS used produces object code that
+# compiles and links cleanly but is binary incompatible at run time.  Configure
+# time is the last point at which this can be detected.
+function(check_kokkos_config_matches_lammps include_dirs)
+    if(NOT LAMMPS_BUILD_DIR)
+        return()
+    endif()
+
+    set(lammps_config "${LAMMPS_BUILD_DIR}/lib/kokkos/KokkosCore_config.h")
+    if(NOT EXISTS "${lammps_config}")
+        return()  # LAMMPS was not built with an in-tree Kokkos; nothing to compare
+    endif()
+
+    unset(plugin_config)
+    foreach(dir ${include_dirs})
+        if(EXISTS "${dir}/KokkosCore_config.h")
+            set(plugin_config "${dir}/KokkosCore_config.h")
+            break()
+        endif()
+    endforeach()
+
+    if(NOT plugin_config)
+        message(WARNING
+            "Could not locate the KokkosCore_config.h used for the plugins; "
+            "unable to verify that it matches the one used by liblammps."
+        )
+        return()
+    endif()
+
+    execute_process(
+        COMMAND ${CMAKE_COMMAND} -E compare_files "${plugin_config}" "${lammps_config}"
+        RESULT_VARIABLE config_differs
+        OUTPUT_QUIET ERROR_QUIET
+    )
+
+    if(config_differs)
+        message(FATAL_ERROR
+            "The Kokkos configuration used for the plugins does not match the "
+            "one compiled into liblammps:\n"
+            "    plugins : ${plugin_config}\n"
+            "    liblammps: ${lammps_config}\n"
+            "Building against a mismatched Kokkos succeeds silently and then "
+            "crashes at run time (typically a segmentation fault inside "
+            "Kokkos::Impl::SharedAllocationRecord<void,void>::increment), "
+            "because the two configurations disagree about the size and layout "
+            "of Kokkos::View.\n"
+            "Point Kokkos_ROOT at the Kokkos that LAMMPS built, i.e.\n"
+            "    -DKokkos_ROOT=<LAMMPS_BUILD_DIR>/cmake_packages/Kokkos"
+        )
+    endif()
+
+    message(STATUS "Kokkos configuration matches the one used by liblammps")
+endfunction()
+
+#     add_lammps_kokkos_definitions(target)
+#
+# Reads the KOKKOS_PREC and KOKKOS_LAYOUT settings out of the LAMMPS build
+# directory and adds the matching LMP_KOKKOS_* macros to `target`, so that the
+# plugins agree with liblammps on KK_FLOAT and on the Kokkos view layout.
+function(add_lammps_kokkos_definitions target)
+    if(NOT LAMMPS_BUILD_DIR OR NOT EXISTS "${LAMMPS_BUILD_DIR}/CMakeCache.txt")
+        message(WARNING
+            "LAMMPS_BUILD_DIR is not set or holds no CMakeCache.txt, so the "
+            "KOKKOS precision and view layout used by liblammps cannot be "
+            "determined. The plugins fall back to the LAMMPS defaults "
+            "(double precision, legacy layout)."
+        )
+        return()
+    endif()
+
+    load_cache("${LAMMPS_BUILD_DIR}" READ_WITH_PREFIX lmp_ KOKKOS_PREC KOKKOS_LAYOUT)
+
+    if(NOT lmp_KOKKOS_PREC)
+        set(lmp_KOKKOS_PREC "double")
+    endif()
+    if(NOT lmp_KOKKOS_LAYOUT)
+        set(lmp_KOKKOS_LAYOUT "legacy")
+    endif()
+
+    string(TOUPPER "${lmp_KOKKOS_PREC}"   prec)
+    string(TOUPPER "${lmp_KOKKOS_LAYOUT}" layout)
+
+    if(prec STREQUAL "DOUBLE")
+        set(prec_setting "DOUBLE_DOUBLE")
+    elseif(prec STREQUAL "MIXED")
+        set(prec_setting "SINGLE_DOUBLE")
+    elseif(prec STREQUAL "SINGLE")
+        set(prec_setting "SINGLE_SINGLE")
+    else()
+        message(FATAL_ERROR "Unknown KOKKOS_PREC '${lmp_KOKKOS_PREC}' in ${LAMMPS_BUILD_DIR}")
+    endif()
+
+    target_compile_definitions(${target} INTERFACE
+        "LMP_KOKKOS_${prec_setting}"
+        "LMP_KOKKOS_LAYOUT_${layout}"
+    )
+
+    message(STATUS
+        "Matching liblammps KOKKOS settings: ${lmp_KOKKOS_PREC} precision, "
+        "${lmp_KOKKOS_LAYOUT} view layout"
+    )
+endfunction()
+
 #     set_python_module_path
 #
 # Tries finding the path where the python lammps module is installed and sets the
@@ -276,6 +393,13 @@ message(STATUS "Found LAMMPS at ${LAMMPS_ROOT} (version ${LAMMPS_VERSION})")
 
 #fetch_lammps(${LAMMPS_tag})
 
+# `fetch_lammps()` above is disabled, so `lammps_SOURCE_DIR` (the variable it
+# would have set) is empty and paths built from it degenerate to "/src/...".
+# Derive it from LAMMPS_SOURCE_DIR, which the user has to provide anyway.
+if(NOT lammps_SOURCE_DIR AND LAMMPS_SOURCE_DIR)
+    get_filename_component(lammps_SOURCE_DIR "${LAMMPS_SOURCE_DIR}/.." ABSOLUTE)
+endif()
+
 if(NOT CMAKE_BUILD_TYPE)
     if(${LAMMPS_VERSION} GREATER 20190618)
         set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Type of build" FORCE)
@@ -310,14 +434,49 @@ add_library(LAMMPS::src ALIAS LAMMPS_src)
 
 target_include_directories(LAMMPS_src INTERFACE "${LAMMPS_SOURCE_DIR}")
 
-find_package(Kokkos QUIET)
+# A plugin that uses the KOKKOS styles MUST be compiled against the very same
+# Kokkos headers *and the very same Kokkos configuration* that liblammps was
+# built with.  Kokkos configuration macros never take part in C++ name mangling,
+# so a plugin built against a differently configured Kokkos still compiles and
+# links without a single diagnostic, and then segfaults at run time as soon as
+# it touches a Kokkos object owned by liblammps.
+#
+# The trap in practice is Kokkos_ENABLE_IMPL_VIEW_LEGACY: LAMMPS forces it ON
+# (cmake/Modules/Packages/KOKKOS.cmake) while Kokkos itself defaults to OFF.
+# The two settings give Kokkos::View different sizes, which shifts the offsets
+# of every DualView member of AtomKokkos and NeighListKokkos.
+#
+# Therefore: look for Kokkos *only* inside the LAMMPS build directory, and
+# refuse to guess.
+if(LAMMPS_BUILD_DIR AND EXISTS "${LAMMPS_BUILD_DIR}/cmake_packages/Kokkos")
+    find_package(Kokkos QUIET NO_DEFAULT_PATH
+        HINTS "${LAMMPS_BUILD_DIR}/cmake_packages/Kokkos"
+    )
+else()
+    find_package(Kokkos QUIET)
+    if(Kokkos_FOUND)
+        message(WARNING
+            "Kokkos was found outside of the LAMMPS build directory. Set "
+            "LAMMPS_BUILD_DIR so that Kokkos can be taken from "
+            "<LAMMPS_BUILD_DIR>/cmake_packages/Kokkos, otherwise the plugins "
+            "may be binary incompatible with liblammps."
+        )
+    endif()
+endif()
+
 if(Kokkos_FOUND)
     message(STATUS "Kokkos support has been enabled (version ${Kokkos_VERSION})")
     get_target_property(KokkosCore       Kokkos::kokkoscore INTERFACE_INCLUDE_DIRECTORIES)
     get_target_property(KokkosContainers Kokkos::kokkoscontainers INTERFACE_INCLUDE_DIRECTORIES)
     get_target_property(KokkosAlgorithms Kokkos::kokkosalgorithms INTERFACE_INCLUDE_DIRECTORIES)
     get_target_property(KokkosSIMD       Kokkos::kokkossimd INTERFACE_INCLUDE_DIRECTORIES)
-    get_target_property(KokkosCompileOptions  Kokkos::kokkoscore INTERFACE_COMPILE_OPTIONS)
+    get_target_property(KokkosCompileOptions     Kokkos::kokkoscore INTERFACE_COMPILE_OPTIONS)
+    get_target_property(KokkosCompileDefinitions Kokkos::kokkoscore INTERFACE_COMPILE_DEFINITIONS)
+
+    # Guard against a Kokkos whose generated configuration differs from the one
+    # compiled into liblammps.  This is the only place where such a mismatch can
+    # still be caught: neither the compiler nor the linker will ever report it.
+    check_kokkos_config_matches_lammps("${KokkosCore}")
 
     add_library(Kokkos_src INTERFACE)
     add_library(Kokkos::src ALIAS Kokkos_src)
@@ -328,6 +487,18 @@ if(Kokkos_FOUND)
     target_include_directories(Kokkos_src INTERFACE "${KokkosSIMD}")
 
     set_target_properties(Kokkos_src PROPERTIES INTERFACE_COMPILE_OPTIONS "${KokkosCompileOptions}")
+    if(KokkosCompileDefinitions)
+        set_target_properties(Kokkos_src PROPERTIES
+            INTERFACE_COMPILE_DEFINITIONS "${KokkosCompileDefinitions}")
+    endif()
+
+    # LAMMPS applies the KOKKOS precision and view-layout macros to the lammps
+    # target with PRIVATE scope (cmake/Modules/Packages/KOKKOS.cmake), and its
+    # exported target only carries LAMMPS_SMALLBIG.  A plugin that does not
+    # repeat them silently disagrees with liblammps about what KK_FLOAT is
+    # (wrong forces, no crash) or about the view layout (crash).  Recover them
+    # from the LAMMPS build directory.
+    add_lammps_kokkos_definitions(Kokkos_src)
 else()
     message(STATUS
         "Kokkos support is not enabled. If you built LAMMPS with Kokkos,"
