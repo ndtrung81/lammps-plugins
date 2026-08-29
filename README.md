@@ -34,7 +34,6 @@ The installation folder `CMAKE_INSTALL_PREFIX` and the `make install` step are n
 ```
   git clone https://github.com/ndtrung81/lammps-plugins.git
   cd lammps-plugins
-  git submodule update --init --recursive
 
   export LAMMPS_INSTALL_DIR=/path/to/lammps/install
   export LAMMPS_SOURCE_DIR=/path/to/lammps/src
@@ -43,7 +42,42 @@ The installation folder `CMAKE_INSTALL_PREFIX` and the `make install` step are n
        -DLAMMPS_SOURCE_DIR=$LAMMPS_SOURCE_DIR -DKokkos_ENABLE_CUDA=on -DKokkos_ARCH_AMPERE80=on
   cmake --build build
 ```
-It is important to match the Kokkos configuration with the LAMMPS build with the KOKKOS package above.
+
+Only `LAMMPS_ROOT` (the install tree) and `LAMMPS_SOURCE_DIR` are required; the
+LAMMPS *build* directory is not needed. The Kokkos sources are taken from
+`$LAMMPS_SOURCE_DIR/../lib/kokkos`, i.e. the very same Kokkos that was compiled
+into `liblammps`, so the Kokkos version can never drift.
+
+You still have to pass the same Kokkos **backend and architecture** that LAMMPS
+was built with (`-DKokkos_ENABLE_CUDA=on -DKokkos_ARCH_AMPERE80=on` above). The
+remaining settings are read out of the installed `lmp` binary automatically:
+
+```
+  $ lmp -h
+  KOKKOS package API: CUDA Serial
+  KOKKOS package precision: double
+  KOKKOS package view layout: legacy
+  Kokkos library version: 5.1.99
+```
+
+From this the build derives `Kokkos_ENABLE_IMPL_VIEW_LEGACY`, `LMP_KOKKOS_<PREC>`
+and `LMP_KOKKOS_LAYOUT_<LAYOUT>`, and it aborts if the Kokkos version or any
+enabled backend disagrees with `liblammps`.
+
+**Why this matters.** Kokkos configuration macros do not take part in C++ name
+mangling. A plugin compiled against a differently configured Kokkos therefore
+compiles and links without a single warning, and then segfaults at run time --
+typically inside `Kokkos::Impl::SharedAllocationRecord<void,void>::increment`,
+as soon as a plugin style touches a Kokkos object owned by `liblammps`. The
+usual culprit is `Kokkos_ENABLE_IMPL_VIEW_LEGACY`, which LAMMPS forces ON while
+Kokkos itself defaults to OFF; the two settings give `Kokkos::View` different
+sizes, which shifts every `DualView` member of `AtomKokkos`. This is why the
+plugins must never be built against a stand-alone Kokkos.
+
+If you also have the LAMMPS build directory at hand, pass `-DLAMMPS_BUILD_DIR=`
+to enable one extra check: the generated `KokkosCore_config.h` is then compared
+byte for byte against the one that went into `liblammps`.
+
 The build when complete will generate `morse2plugin.so`, `lj2plugin.so` and `nve2plugin.so` in the `build` folder.
 
 ## Test

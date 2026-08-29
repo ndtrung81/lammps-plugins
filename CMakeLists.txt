@@ -52,10 +52,7 @@ else()
     endif()
 endif()
 
-# Kokkos build shared libs
-set(BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON CACHE BOOL "" FORCE)
-add_subdirectory(tpls/kokkos)
 
 # C++20 is required
 set(CMAKE_CXX_STANDARD 20)
@@ -87,12 +84,12 @@ target_include_directories(morse2plugin PRIVATE "${LAMMPS_HEADER_DIR}/OPENMP")
 add_library(lj2plugin MODULE ${PLUGINS_SOURCE_DIR}/lj2plugin.cpp ${PLUGINS_SOURCE_DIR}/pair_lj_cut2.cpp ${PLUGINS_SOURCE_DIR}/pair_lj_cut2_kokkos.cpp)
 target_include_directories(lj2plugin PRIVATE "${PLUGINS_SOURCE_DIR}")
 target_include_directories(lj2plugin PRIVATE "${LAMMPS_HEADER_DIR}/KOKKOS")
-target_link_libraries(lj2plugin PUBLIC LAMMPS::src LAMMPS::lammps Kokkos::kokkos)
+target_link_libraries(lj2plugin PUBLIC LAMMPS::src LAMMPS::lammps)
 
 add_library(nve2plugin MODULE ${PLUGINS_SOURCE_DIR}/nve2plugin.cpp ${PLUGINS_SOURCE_DIR}/fix_nve2.cpp ${PLUGINS_SOURCE_DIR}/fix_nve2_kokkos.cpp)
 target_include_directories(nve2plugin PRIVATE "${PLUGINS_SOURCE_DIR}")
 target_include_directories(nve2plugin PRIVATE "${LAMMPS_HEADER_DIR}/KOKKOS")
-target_link_libraries(nve2plugin PRIVATE LAMMPS::src LAMMPS::lammps Kokkos::kokkos)
+target_link_libraries(nve2plugin PRIVATE LAMMPS::src LAMMPS::lammps)
 
 if(Kokkos_FOUND)
     get_target_property(KokkosCompileOptions Kokkos::src INTERFACE_COMPILE_OPTIONS)
