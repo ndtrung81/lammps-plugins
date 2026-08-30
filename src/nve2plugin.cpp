@@ -54,13 +54,13 @@ extern "C" void lammpsplugin_init(void *lmp, void *handle, void *regfunc)
 
   // also register nve2/kk/host pair style. only need to update changed fields
   plugin.name = "nve2/kk/host";
-  plugin.info = "nve2/kk variant pair style for Kokkos v1.0";
+  plugin.info = "nve2/kk/host variant pair style for Kokkos v1.0";
   plugin.creator.v1 = (lammpsplugin_factory1 *) &nve2kkhostcreator;
   (*register_plugin)(&plugin, lmp);
 
   // also register nve2/kk/device pair style. only need to update changed fields
   plugin.name = "nve2/kk/device";
-  plugin.info = "nve2/kk variant pair style for Kokkos v1.0";
+  plugin.info = "nve2/kk/device variant pair style for Kokkos v1.0";
   plugin.creator.v1 = (lammpsplugin_factory1 *) &nve2kkdevicecreator;
   (*register_plugin)(&plugin, lmp);
 }
